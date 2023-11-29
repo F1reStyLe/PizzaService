@@ -19,23 +19,21 @@ class PizzaController {
                                         join ingredient i on t.ingredients = i.techmap_id
                                         join pizza p on p.id = t.pizza_id
                                         join stock s on s.id = i."name"
-                                        where p.id = $1`, [id])
+                                        where p.id = $1;`, [id])
         res.json(pizza.rows)
     }
-    async updateUser (req, res) {
-        const {id, username, password, role} = req.body;
-        console.log(req.body);
-        const updUser = await db.query(`update userlist
-                                        set username = $1,
-                                            password = $2,
-                                            role     = $3
-                                        where id     = $4
-                                        returning *;`, [username, password, role, id]);
+    async updatePizza (req, res) {
+        const {id, title, comp} = req.body;
+        const updUser = await db.query(`update pizza
+                                        set title = $1,
+                                            composition = $2,
+                                        where id     = $3
+                                        returning *;`, [title, comp, id]);
         res.json(updUser.rows);
     }
-    async deleteUser (req, res) {
+    async deletePizza (req, res) {
         const id = req.params.id;
-        const user = await db.query(`delete from userlist
+        const user = await db.query(`delete from pizza
                                     where id = $1;`, [id]);
 
         res.json(user.rows);
