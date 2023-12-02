@@ -8,14 +8,14 @@ class UserController {
         res.json(newUser.rows);
     }
     async getUsers (req, res) {
-        const users = await db.query(`select username, title
+        const users = await db.query(`select u.id, username, title
                                         from userlist u
                                         join roles r on u."role" = r.id;`);
         res.json(users.rows)
     }
     async getUser (req, res) {
         const id = req.params.id;
-        const user = await db.query(`select username, title
+        const user = await db.query(`select u.id, username, title
                                     from userlist u
                                     join roles r on u."role" = r.id
                                     where u.id = $1;`, [id])
