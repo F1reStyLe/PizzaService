@@ -41,7 +41,7 @@
         </v-card-item>
         <v-card-actions>
           <v-spacer/>
-            <v-btn text="Удалить" variant="flat" color="error"/>
+            <v-btn text="Удалить" variant="flat" color="error" @click="deleteUser(el.id)"/>
           </v-card-actions>
       </v-card>
     </v-list-item>
@@ -51,6 +51,7 @@
 
 <script lang="ts">
 type User = {
+  id: number,
   username: string,
   title: string,
 };
