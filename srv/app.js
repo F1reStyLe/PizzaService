@@ -7,6 +7,7 @@ const userRouter = require('./routes/user.routes');
 const pizzaRouter = require('./routes/pizza.routes');
 const staffRouter = require('./routes/staff.routes');
 const authRouter = require('./routes/auth.routes');
+const adminRouter = require('./routes/admin.routes');
 
 app.use(express.json());
 app.use(cors());
@@ -14,6 +15,7 @@ app.use('/user', userRouter);
 app.use('/pizza', pizzaRouter);
 app.use('/staff', staffRouter);
 app.use('/auth', authRouter);
+app.use('/admin', adminRouter);
 
 const runServer = async () => {
     try{
