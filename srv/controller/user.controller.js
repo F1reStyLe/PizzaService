@@ -39,6 +39,13 @@ class UserController {
 
         res.json(user.rows)
     }
+    async deleteUsers (req, res) {
+        const dropUsers = req.body.dropUsers;
+        const users = await db.query(`delete from userlist
+                                    where id in (${dropUsers.join(',')});`);
+
+        res.json(users.rows)
+    }
 }
 
 module.exports = new UserController();
