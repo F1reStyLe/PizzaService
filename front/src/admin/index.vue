@@ -1,59 +1,40 @@
 <template>
   <v-tabs v-model="tab" align-tabs="center" bg-color="indigo">
-    <v-tab value="users">Пользователи</v-tab>
-    <v-tab value="pizza">Пиццы</v-tab>
-    <v-tab value="ingridients">Ингридиенты</v-tab>
+    <v-tab v-for="el of titles" :value="el.value">
+      {{ el.title }}
+    </v-tab>
   </v-tabs>
   <v-divider />
   <v-row class="bg-indigo">
     <v-col cols="11">
-      <v-dialog width="500">
-        <template v-slot:activator="{ props }">
+      <dialog-window title="Добавить пользователя" @submit="onAddUser">
+        <template #activator="{ props }">
           <v-btn v-bind="props" icon="mdi-plus" color="indigo" elevation="0" />
         </template>
-        <template v-slot:default="{ isActive }">
-          <v-card>
-            <v-toolbar
-              color="indigo"
-              title="Добавить пользователя"
-              density="compact"
-            />
-            <div class="pa-5">
-              <v-row>
-                <v-text-field
-                  v-model="username"
-                  label="Введите никнейм"
-                ></v-text-field>
-              </v-row>
-              <v-row>
-                <v-text-field
-                  v-model="password"
-                  label="Введите пароль"
-                ></v-text-field>
-              </v-row>
-              <v-row>
-                <v-spacer />
-                <v-btn
-                  class="mr-1"
-                  text="Сохранить"
-                  color="indigo"
-                  variant="flat"
-                  @click="addUser(isActive)"
-                />
-                <v-btn
-                  text="Отмена"
-                  color="error"
-                  variant="flat"
-                  @click="isActive.value = false"
-                />
-              </v-row>
-            </div>
-          </v-card>
-        </template>
-      </v-dialog>
+        <v-row>
+          <v-text-field label="Введите никнейм" />
+        </v-row>
+        <v-row>
+          <v-text-field label="Введите пароль" />
+        </v-row>
+        <v-row>
+          <v-combobox
+            v-model="role"
+            item-value="id"
+            label="Введите роль"
+            :items="roles"
+            :return-object="false"
+          />
+        </v-row>
+      </dialog-window>
     </v-col>
     <v-col v-if="selectUsers.length > 0">
-      <v-btn icon="mdi-delete" color="indigo" elevation="0" @click="deleteUsers"/>
+      <v-btn
+        icon="mdi-delete"
+        color="indigo"
+        elevation="0"
+        @click="deleteUsers"
+      />
     </v-col>
   </v-row>
   <v-window v-model="tab">
@@ -74,40 +55,74 @@
 </template>
 
 <script lang="ts">
+import gql from "graphql-tag";
+import dialogWindow from "../components/DialogWindow.vue";
+
 type User = {
   id: number;
   username: string;
+  role: {
+    title: string;
+  };
+};
+
+type Role = {
+  id: number;
+  title: string;
+};
+
+type Titles = {
+  value: string;
   title: string;
 };
 export default {
+  components: { dialogWindow },
+  props: {
+    titles: Array<Titles>,
+  },
   data() {
     return {
       users: [] as User[],
+      selectUsers: [] as number[],
+      roles: [] as Role[],
       password: "" as string,
       username: "" as string,
-      role: 2,
       tab: null,
+      role: 2,
       headers: [
         { key: "id", title: "ID" },
         { key: "username", title: "Username" },
-        { key: "title", title: "Role" },
+        { key: "role[0].title", title: "Role" },
       ],
-      selectUsers: [],
     };
   },
-  created() {
-    this.getUsers();
+  apollo: {
+    users: gql`
+      query {
+        users {
+          id
+          username
+          role {
+            title
+          }
+        }
+      }
+    `,
+    roles: gql`
+      query {
+        roles {
+          id
+          title
+        }
+      }
+    `,
   },
   methods: {
-    async getUsers() {
-      this.users = (await fetch("http://localhost:7000/user", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }).then((res) => res.json())) as User[];
+    onAddUser(isActive: any) {
+      this.username = "";
+      this.password = "";
+      isActive.value = false;
     },
-
     async addUser(state: any) {
       await fetch("http://localhost:7000/user", {
         method: "POST",
@@ -121,23 +136,19 @@ export default {
         }),
       });
       state.value = false;
-      this.username = '';
-      this.password = '';
-      this.getUsers();
     },
 
     async deleteUsers() {
       await fetch(`http://localhost:7000/user`, {
         method: "DELETE",
         headers: {
-            "Content-Type": "application/json",
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            dropUsers: this.selectUsers,
+          dropUsers: this.selectUsers,
         }),
       });
       this.selectUsers = [];
-      this.getUsers();
     },
   },
 };
